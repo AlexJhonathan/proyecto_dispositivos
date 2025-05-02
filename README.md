@@ -66,35 +66,36 @@ Esta propuesta nace como respuesta a:
 
 ## 📁 Estructura de Archivos
 
+```text
 EcoGo/
 ├── assets/                # Imágenes, íconos, sonidos
 ├── lib/
-|    |- core/                     # Funcionalidades centrales y utilidades
-|    |   |- errors/               # Manejo de errores
-|    |   |- platform/             # Interacciones con la plataforma
-|    |   |- util/                 # Utilidades generales
-|    |
-|    |- data/                     # Capa de datos
-|    |   |- datasources/          # Fuentes de datos (API, local, etc.)
-|    |   |- models/               # Clases de modelo
-|    |   |- repositories/         # Implementaciones de repositorios
-|    |
-|    |- domain/                   # Lógica de negocio
-|    |   |- entities/             # Entidades de dominio
-|    |   |- repositories/         # Interfaces de repositorios
-|    |   |- usecases/             # Casos de uso
-|    |
-|    |- presentation/             # UI y lógica de presentación
-|    |   |- bloc/                 # BLoCs o providers (estado)
-|    |   |- pages/                # Páginas/pantallas
-|    |   |- widgets/              # Widgets reutilizables
-|    |
-|    |- injection_container.dart  # Configuración de inyección de dependencias
-|    └─ main.dart                 # Punto de entrada de la aplicación
-├── test/                  # Pruebas unitarias
-├── pubspec.yaml           # Dependencias del proyecto
+│   ├── core/                     # Funcionalidades centrales y utilidades
+│   │   ├── errors/               # Manejo de errores
+│   │   ├── platform/             # Interacciones con la plataforma
+│   │   └── util/                 # Utilidades generales
+│
+│   ├── data/                     # Capa de datos
+│   │   ├── datasources/          # Fuentes de datos (API, local, etc.)
+│   │   ├── models/               # Clases de modelo
+│   │   └── repositories/         # Implementaciones de repositorios
+│
+│   ├── domain/                   # Lógica de negocio
+│   │   ├── entities/             # Entidades de dominio
+│   │   ├── repositories/         # Interfaces de repositorios
+│   │   └── usecases/             # Casos de uso
+│
+│   ├── presentation/             # UI y lógica de presentación
+│   │   ├── bloc/                 # BLoCs o providers (estado)
+│   │   ├── pages/                # Páginas/pantallas
+│   │   └── widgets/              # Widgets reutilizables
+│
+│   ├── injection_container.dart  # Configuración de inyección de dependencias
+│   └── main.dart                 # Punto de entrada de la aplicación
+├── test/                         # Pruebas unitarias
+├── pubspec.yaml                  # Dependencias del proyecto
 └── README.md
-
+```
 ---
 
 ## 📚 Más sobre EcoGo
