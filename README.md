@@ -18,7 +18,7 @@
 
 ## 📌 Introducción
 
-Las ciudades modernas enfrentan una crisis creciente de gestión de residuos. EcoGo nace como una solución innovadora que transforma la recolección de basura en una experiencia divertida, usando **realidad aumentada**, **geolocalización** y un **sistema de recompensas**. 🌍
+Las ciudades modernas enfrentan una crisis creciente de gestión de residuos. EcoGo nace como una solución innovadora que transforma la recolección de basura en una experiencia divertida, usando **geolocalización** y un **sistema de recompensas**. 🌍
 
 > 📱 Imagina usar tu celular para "capturar" basura como si fuera un juego estilo Pokémon GO. Cada acción cuenta para limpiar tu ciudad… ¡y puedes ganar premios por hacerlo!
 
@@ -49,20 +49,18 @@ Esta propuesta nace como respuesta a:
 
 - **Flutter** (frontend mobile)
 - **Firebase** (backend: autenticación, base de datos, almacenamiento)
-- **Google Maps API** (geolocalización y rutas)
-- **TensorFlow Lite** (reconocimiento de objetos IA)
-- **Unity + ARCore/ARKit** (para funciones de realidad aumentada)
+- **Geolocator** (geolocalización y rutas)
+- **Image Picker** (captura de camara)
 - **Node.js** (para microservicios opcionales)
 
 ---
 
 ## 🧪 Entorno de Desarrollo
 
-- IDE: **Visual Studio Code** / **Android Studio**
+- IDE: **Visual Studio Code**
 - Dispositivo: Android 9+ o iOS 12+
 - SDK: Flutter >= 3.0.0
 - Base de datos: Firebase Firestore
-- Sistema de recompensas simulado para pruebas locales
 
 ---
 
@@ -70,12 +68,29 @@ Esta propuesta nace como respuesta a:
 
 EcoGo/
 ├── assets/                # Imágenes, íconos, sonidos
-├── lib/                   # Código fuente Flutter
-│   ├── models/            # Modelos de datos
-│   ├── screens/           # Pantallas principales
-│   ├── services/          # Lógica de Firebase y AR
-│   └── main.dart          # Punto de entrada
-├── firebase/              # Configuración de Firebase
+├── lib/
+|    |- core/                     # Funcionalidades centrales y utilidades
+|    |   |- errors/               # Manejo de errores
+|    |   |- platform/             # Interacciones con la plataforma
+|    |   |- util/                 # Utilidades generales
+|    |
+|    |- data/                     # Capa de datos
+|    |   |- datasources/          # Fuentes de datos (API, local, etc.)
+|    |   |- models/               # Clases de modelo
+|    |   |- repositories/         # Implementaciones de repositorios
+|    |
+|    |- domain/                   # Lógica de negocio
+|    |   |- entities/             # Entidades de dominio
+|    |   |- repositories/         # Interfaces de repositorios
+|    |   |- usecases/             # Casos de uso
+|    |
+|    |- presentation/             # UI y lógica de presentación
+|    |   |- bloc/                 # BLoCs o providers (estado)
+|    |   |- pages/                # Páginas/pantallas
+|    |   |- widgets/              # Widgets reutilizables
+|    |
+|    |- injection_container.dart  # Configuración de inyección de dependencias
+|    └─ main.dart                 # Punto de entrada de la aplicación
 ├── test/                  # Pruebas unitarias
 ├── pubspec.yaml           # Dependencias del proyecto
 └── README.md
@@ -89,13 +104,13 @@ Productos:
 - App gamificada para recoger basura
 - Mapa de basureros cercanos
 - Sistema de recompensas y logros
-- RA para identificar desechos
 Beneficios:
 - Divierte mientras limpias
 - Recibes beneficios tangibles
 - Te unes a una comunidad consciente
 
 🧠 Mapa de Empatía
+Segun los entrevistados:
 - Piensa y siente: Desea una ciudad limpia, pero le falta motivación.
 - Ve y oye: Basura en las calles, pocas campañas efectivas.
 - Dice y hace: Usa apps móviles, participa si hay incentivos.
