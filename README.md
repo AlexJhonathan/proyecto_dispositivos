@@ -1,6 +1,6 @@
 # ♻️ EcoGo - La app que transforma basura en recompensas
 
-![EcoGo Demo](https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExZHU1ZTA1dHo5ZzRwd2t4ZmdwY3JoajMyYmlvZ2tzcXNsaW96d3llZSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/lrmq6h2rZbIXGGKLb1/giphy.gif) <!-- Reemplaza con tu GIF -->
+![EcoGo Demo](https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExaWF5dm9oa2dmdmI0ZG93N240d2x5aWl1enRqZGt6bDd1MzlvZDI2YSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/wuxOxEaK0GzpaO58uq/giphy.gif) <!-- Reemplaza con tu GIF -->
 
 ---
 
@@ -63,3 +63,64 @@ Esta propuesta nace como respuesta a:
 - SDK: Flutter >= 3.0.0
 - Base de datos: Firebase Firestore
 - Sistema de recompensas simulado para pruebas locales
+
+---
+
+## 📁 Estructura de Archivos
+
+EcoGo/
+├── assets/                # Imágenes, íconos, sonidos
+├── lib/                   # Código fuente Flutter
+│   ├── models/            # Modelos de datos
+│   ├── screens/           # Pantallas principales
+│   ├── services/          # Lógica de Firebase y AR
+│   └── main.dart          # Punto de entrada
+├── firebase/              # Configuración de Firebase
+├── test/                  # Pruebas unitarias
+├── pubspec.yaml           # Dependencias del proyecto
+└── README.md
+
+---
+
+## 📚 Más sobre EcoGo
+
+🧩 Propuesta de Valor
+Productos:
+- App gamificada para recoger basura
+- Mapa de basureros cercanos
+- Sistema de recompensas y logros
+- RA para identificar desechos
+Beneficios:
+- Divierte mientras limpias
+- Recibes beneficios tangibles
+- Te unes a una comunidad consciente
+
+🧠 Mapa de Empatía
+- Piensa y siente: Desea una ciudad limpia, pero le falta motivación.
+- Ve y oye: Basura en las calles, pocas campañas efectivas.
+- Dice y hace: Usa apps móviles, participa si hay incentivos.
+- Esfuerzos: Falta de tiempo y motivación.
+- Resultados esperados: Recompensas, reconocimiento, diversión.
+
+🧭 Inspiraciones del Journey Map
+- Litterati: Fotos de basura con ubicación GPS.
+- OpenLitterMap: Datos para decisiones políticas sobre residuos.
+- Recicla y Gana: Incentivos por comprar en negocios sostenibles.
+
+📈 Plan de Escalabilidad
+1. Prueba piloto en Tarija 🇧🇴
+2. Expansión nacional 🌎
+3. Alianzas con municipios y ONGs
+4. Expansión global con versión multilingüe
+
+---
+
+## 🚀 Conclusión
+EcoGo representa una fusión poderosa entre tecnología, conciencia ambiental y juego. Su enfoque fresco puede revolucionar la gestión urbana de residuos con impacto real y medible.
+
+Si quieres colaborar o aprender más, ¡no dudes en contribuir! 💚
+
+🧑‍💻 Contacto
+Desarrollado por Maria Jose Aguilar y Alex Choque
+📧 alexjhonathan04tj@gmail.com
+📧 mariajoseaguilarramirez5@gmail.com
