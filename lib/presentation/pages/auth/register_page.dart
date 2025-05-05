@@ -1,41 +1,37 @@
 import 'package:flutter/material.dart';
-import 'package:proyecto_dispositivos/services/auth_service.dart';
+import 'package:geo_app/services/auth_service.dart';
 
-class LoginPage extends StatefulWidget {
+class RegisterPage extends StatefulWidget {
   @override
-  _LoginPageState createState() => _LoginPageState();
+  _RegisterPageState createState() => _RegisterPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _authService = AuthService();
   bool _isLoading = false;
 
-  Future<void> _login() async {
+  Future<void> _register() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
-      
-      try {
-        final user = await _authService.signIn(
-          email: _emailController.text,
-          password: _passwordController.text,
-        );
-        
-        setState(() => _isLoading = false);
-        
-        if (user != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Inicio de sesión exitoso!')),
-          );
-          Navigator.pushNamed(context, '/firstpage');
 
-        }
-      } catch (e) {
-        setState(() => _isLoading = false);
+      final user = await _authService.createAccount(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+
+      setState(() => _isLoading = false);
+
+      if (user != null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al iniciar sesión: ${e.toString()}')),
+          SnackBar(content: Text('Registro exitoso!')),
+        );
+
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al registrarse')),
         );
       }
     }
@@ -56,12 +52,12 @@ class _LoginPageState extends State<LoginPage> {
                 CircleAvatar(
                   radius: 50,
                   backgroundColor: Colors.white,
-                  child: Icon(Icons.lock, size: 50, color: Colors.brown),
+                  child: Icon(Icons.person_add, size: 50, color: Colors.brown),
                 ),
                 SizedBox(height: 20),
 
                 Text(
-                  "Iniciar Sesión",
+                  "Registro",
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -103,7 +99,7 @@ class _LoginPageState extends State<LoginPage> {
                 SizedBox(
                   width: 285,
                   child: ElevatedButton(
-                    onPressed: _login,
+                    onPressed: _register,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.brown,
                       foregroundColor: Colors.white,
@@ -114,7 +110,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     child: _isLoading
                         ? CircularProgressIndicator(color: Colors.white)
-                        : Text("Ingresar"),
+                        : Text("Registrarse"),
                   ),
                 ),
               ],

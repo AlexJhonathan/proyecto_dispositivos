@@ -1,10 +1,12 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:proyecto_dispositivos/firebase_options.dart';
+import 'package:geo_app/firebase_options.dart';
 
-import 'package:proyecto_dispositivos/pages/auth/login_page.dart';
-import 'package:proyecto_dispositivos/pages/auth/register_page.dart';
-import 'package:proyecto_dispositivos/pages/home_page.dart';
+import 'package:geo_app/presentation/pages/auth/login_page.dart';
+import 'package:geo_app/presentation/pages/auth/register_page.dart';
+import 'package:geo_app/presentation/pages/home_page.dart';
+import 'package:geo_app/presentation/pages/first_page.dart';
+import 'package:geo_app/presentation/pages/location_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,9 +25,11 @@ class MainApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       home: LoginPage(),
       routes: {
+        '/locationpage': (context) => const LocationPage(),
         '/loginpage': (context) => LoginPage(),
         '/registerpage': (context) => RegisterPage(),
         '/homepage': (context) => HomePage(),
+        '/firstpage': (context) => FirstPage(),
       }
     );
   }

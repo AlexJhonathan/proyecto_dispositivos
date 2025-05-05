@@ -13,6 +13,7 @@ dependencies:
   firebase_auth: ^5.5.1
   shared_preferences: ^2.5.3
   image_picker: ^1.1.2
+  geolocator: ^9.0.2
 
 dev_dependencies:
   flutter_test:
