@@ -1,0 +1,5 @@
+0 Bolsa transparente
+1 Tarjeta entel
+2 Chisitos
+3 Karpil
+4 Servilleta
