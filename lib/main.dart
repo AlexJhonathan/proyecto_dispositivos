@@ -31,7 +31,7 @@ class MainApp extends StatelessWidget {
         '/homepage': (context) => HomePage(),
         '/firstpage': (context) => FirstPage(),
         '/geopage': (context) => GeoPage(),
-        '/playpage': (context) => PlayPage(),
+        '/play': (context) => PlayPage(),
       }
     );
   }

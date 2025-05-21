@@ -3,3 +3,7 @@
 2 Chisitos
 3 Karpil
 4 Servilleta
+5 Botella
+6 Envase desechable
+7 Vaso desechable
+8 Bolsa Negra
