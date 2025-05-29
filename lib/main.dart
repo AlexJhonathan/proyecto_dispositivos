@@ -8,6 +8,13 @@ import 'package:ecogo_app/pages/geo_page.dart';
 import 'package:ecogo_app/pages/home_page.dart';
 import 'package:ecogo_app/pages/first_page.dart';
 import 'package:ecogo_app/pages/play_page.dart';
+import 'package:ecogo_app/pages/notification_page.dart';
+import 'package:ecogo_app/pages/admin_notification_page.dart';
+import 'package:ecogo_app/pages/winnings_page.dart';
+import 'package:ecogo_app/pages/admin_winnings_page.dart';
+import 'package:ecogo_app/pages/user_profile_page.dart';
+import 'package:ecogo_app/pages/auth_admin_page.dart';
+//import 'package:ecogo_app/pages/prueba.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,7 +31,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: PlayPage(),
+      home: AuthAdminPage(),
       routes: {
         '/loginpage': (context) => LoginPage(),
         '/registerpage': (context) => RegisterPage(),
@@ -32,6 +39,13 @@ class MainApp extends StatelessWidget {
         '/firstpage': (context) => FirstPage(),
         '/geopage': (context) => GeoPage(),
         '/play': (context) => PlayPage(),
+        '/notificationpage': (context) => NotificationPage(),
+        '/adminnotificationpage': (context) => AdminNotificationPage(),
+        '/winningspage': (context) => WinningsPage(),
+        '/adminwinningspage': (context) => AdminWinningsPage(),
+        '/userprofilepage': (context) => UserProfilePage(),
+        '/authadminpage': (context) => AuthAdminPage(),
+        //'/prueba': (context) => Prueba(),
       }
     );
   }
