@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:proyecto_dispositivos/services/auth_service.dart';
+import 'package:ecogo_app/services/auth_service.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -29,7 +29,7 @@ class _LoginPageState extends State<LoginPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Inicio de sesión exitoso!')),
           );
-          Navigator.pushNamed(context, '/firstpage');
+          Navigator.pushNamed(context, '/navscreen');
 
         }
       } catch (e) {
@@ -121,6 +121,17 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.pushNamed(
+            context,
+            '/authadminpage',
+
+          );
+        },
+        backgroundColor: Colors.pinkAccent,
+        child: Icon(Icons.location_on),
       ),
     );
   }
