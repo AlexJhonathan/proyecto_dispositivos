@@ -1,17 +1,19 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:proyecto_dispositivos/services/auth_service.dart';
 
 class Prueba extends StatefulWidget {
-  final double currentLat;
-  final double currentLng;
-  final VoidCallback onBack;
+  final double currentLat = -21.532860;
+  final double currentLng = -64.730900;
+  final double originalLat = -21.532860;
+  final double originalLng = -64.730900;
+  final bool mostrarRuta;
 
   const Prueba({
     Key? key,
-    required this.currentLat,
-    required this.currentLng,
-    required this.onBack,
+    this.mostrarRuta = false,
   }) : super(key: key);
 
   @override
@@ -29,20 +31,49 @@ class _PruebaState extends State<Prueba> {
 
   late double currentLat;
   late double currentLng;
+  late double originalLat;
+  late double originalLng;
 
   final List<Offset> coordenadas = [];
   final Set<Offset> basureros = {};
+  bool mostrarRuta = false;
 
   @override
-  void initState() {
-    super.initState();
-    currentLat = -21.532900;
-    currentLng = -64.730940;
-    //currentLat = widget.currentLat;
-    //currentLng = widget.currentLng;
-    _generarCoordenadasCuadrantes();
-    _generarBasureros();
-  }
+void initState() {
+  super.initState();
+
+  double latStep = (maxLat - minLat) / rows;
+  double lngStep = (maxLng - minLng) / cols;
+
+  originalLat = minLat + (4 + 0.5) * latStep;
+  originalLng = minLng + (5 + 0.5) * lngStep;
+
+  currentLat = originalLat;
+  currentLng = originalLng;
+  mostrarRuta = widget.mostrarRuta;
+
+  _generarCoordenadasCuadrantes();
+
+  double basureroLat = minLat + (2 + 0.5) * latStep;
+  double basureroLng = minLng + (4 + 0.5) * lngStep;
+  
+  double basureroLat1 = minLat + (6 + 0.5) * latStep;
+  double basureroLng1 = minLng + (2 + 0.5) * lngStep;
+
+  double basureroLat2 = minLat + (9 + 0.5) * latStep;
+  double basureroLng2 = minLng + (4 + 0.5) * lngStep;
+
+  double basureroLat3 = minLat + (10 + 0.5) * latStep;
+  double basureroLng3 = minLng + (8 + 0.5) * lngStep;
+
+  basureros.clear();
+  basureros.add(Offset(basureroLat, basureroLng));
+  basureros.add(Offset(basureroLat1, basureroLng1));
+  basureros.add(Offset(basureroLat2, basureroLng2));
+  basureros.add(Offset(basureroLat3, basureroLng3)); // Fila 3, columna 5
+
+  
+}
 
   void _generarCoordenadasCuadrantes() {
     double latStep = (maxLat - minLat) / rows;
@@ -57,43 +88,6 @@ class _PruebaState extends State<Prueba> {
     }
   }
 
- void _generarBasureros() {
-    // Coordenadas fijas, en cuadrantes más al centro
-    basureros.addAll([
-      Offset(-21.532900, -64.730940), // cuadrante central 1
-      Offset(-21.532950, -64.730920), // cuadrante central 2
-      Offset(-21.532970, -64.730960), // cuadrante central 3
-      Offset(-21.532880, -64.730930), // cuadrante central 4
-    ]);
-  }
-
-  bool _estaEnCuadranteBasurero() {
-    double latStep = (maxLat - minLat) / rows;
-    double lngStep = (maxLng - minLng) / cols;
-
-    for (final basurero in basureros) {
-      int i = ((basurero.dx - minLat) / latStep).floor();
-      int j = ((basurero.dy - minLng) / lngStep).floor();
-
-      double quadMinLat = minLat + i * latStep;
-      double quadMaxLat = quadMinLat + latStep;
-
-      double quadMinLng = minLng + j * lngStep;
-      double quadMaxLng = quadMinLng + lngStep;
-
-      bool esUltimaFila = i == rows - 1;
-      bool esUltimaColumna = j == cols - 1;
-
-      if (currentLat >= quadMinLat &&
-          (esUltimaFila ? currentLat <= quadMaxLat : currentLat < quadMaxLat) &&
-          currentLng >= quadMinLng &&
-          (esUltimaColumna ? currentLng <= quadMaxLng : currentLng < quadMaxLng)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   @override
   Widget build(BuildContext context) {
     double width = 350;
@@ -106,6 +100,7 @@ class _PruebaState extends State<Prueba> {
     double lngStep = (maxLng - minLng) / cols;
 
     Offset? puntoCentro;
+    Offset? puntoBasurero;
 
     for (int i = 0; i < rows; i++) {
       for (int j = 0; j < cols; j++) {
@@ -130,15 +125,24 @@ class _PruebaState extends State<Prueba> {
       }
     }
 
+    if (basureros.isNotEmpty) {
+      final b = basureros.first;
+      int i = ((b.dx - minLat) / latStep).floor();
+      int j = ((b.dy - minLng) / lngStep).floor();
+
+      puntoBasurero = Offset(
+        j * cellWidth + cellWidth / 2,
+        i * cellHeight + cellHeight / 2,
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Mapa Universidad"),
-        backgroundColor: Colors.green,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: widget.onBack,
-        ),
+        backgroundColor: Color.fromARGB(255, 140, 198, 64),
+        foregroundColor: Colors.white,
       ),
+      backgroundColor: Color(0xFFE8F5E8),
       body: LayoutBuilder(
         builder: (context, constraints) {
           return Center(
@@ -158,7 +162,6 @@ class _PruebaState extends State<Prueba> {
                       ),
                     ),
                   ),
-                  // Dibuja los basureros
                   ...basureros.map((offset) {
                     int i = ((offset.dx - minLat) / latStep).floor();
                     int j = ((offset.dy - minLng) / lngStep).floor();
@@ -179,28 +182,97 @@ class _PruebaState extends State<Prueba> {
                       size: Size(width, height),
                       painter: UbicacionPainter(puntoCentro!),
                     ),
+
+                  if (mostrarRuta && puntoCentro != null && puntoBasurero != null)
+                    CustomPaint(
+                      size: Size(width, height),
+                      painter: RutaPainter(puntoCentro!, puntoBasurero),
+                    ),
                 ],
               ),
             ),
           );
         },
       ),
-      floatingActionButton: _estaEnCuadranteBasurero()
-          ? FloatingActionButton(
-              backgroundColor: Colors.orange,
-              child: Icon(Icons.camera_alt),
-              onPressed: () {
-                Navigator.pushNamed(context, '/homepage');
-              },
+      floatingActionButton: mostrarRuta
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                FloatingActionButton.extended(
+                 onPressed: () async {
+                  double latStep = (maxLat - minLat) / rows;
+                  double lngStep = (maxLng - minLng) / cols;
+
+                  // Movimiento paso a paso: izquierda 1 (lng -) y arriba 2 (lat -)
+                  List<Offset> pasos = [
+                    Offset(currentLat, currentLng - lngStep), // 1 paso izquierda
+                    Offset(currentLat - latStep, currentLng - lngStep), // 1 paso arriba
+                    Offset(currentLat - 2 * latStep, currentLng - lngStep), // otro paso arriba
+                  ];
+
+                  for (int i = 0; i < pasos.length; i++) {
+                    await Future.delayed(Duration(seconds: 10));
+                    setState(() {
+                      currentLat = pasos[i].dx;
+                      currentLng = pasos[i].dy;
+                    });
+                  }
+
+                  // Espera 1 segundo adicional antes de mostrar el mensaje de éxito
+                  await Future.delayed(Duration(seconds: 4));
+
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: Text("¡Éxito!"),
+                        content: Text("Ganaste 20 puntos 🎉"),
+                        actions: [
+                          TextButton(
+                            onPressed: () async {
+                              Navigator.pop(context);
+
+                              final authService = Provider.of<AuthService>(context, listen: false);
+                              await authService.sumarPuntos(20);
+
+                              setState(() {
+                                currentLat = originalLat;
+                                currentLng = originalLng;
+                                mostrarRuta = false;
+                              });
+                            },
+                            child: Text("OK"),
+                          ),
+                        ],
+                      ),
+                    );
+                  
+                },
+                  icon: Icon(Icons.directions_walk),
+                  label: Text("Comenzar el recorrido"),
+                  backgroundColor: Color.fromARGB(255, 47, 147, 255),
+                ),
+                SizedBox(height: 10),
+              ],
             )
-          : null,
+          : FloatingActionButton(
+              backgroundColor: const Color.fromARGB(255, 47, 147, 255),
+              child: Icon(Icons.camera_alt, color: Colors.white),
+              onPressed: () async {
+                // Al volver desde la cámara, pasar `mostrarRuta = true`
+                final result = await Navigator.pushNamed(context, '/homepage');
+                if (result == true) {
+                  setState(() {
+                    mostrarRuta = true;
+                  });
+                }
+              },
+            ),
     );
   }
 }
 
 class UbicacionPainter extends CustomPainter {
   final Offset centro;
-
   UbicacionPainter(this.centro);
 
   @override
@@ -213,4 +285,21 @@ class UbicacionPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+class RutaPainter extends CustomPainter {
+  final Offset inicio;
+  final Offset fin;
+  RutaPainter(this.inicio, this.fin);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.red
+      ..strokeWidth = 3;
+    canvas.drawLine(inicio, fin, paint);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => true;
 }

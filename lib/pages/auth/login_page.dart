@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ecogo_app/services/auth_service.dart';
+import 'package:proyecto_dispositivos/services/auth_service.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -16,21 +16,18 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
-      
       try {
         final user = await _authService.signIn(
           email: _emailController.text,
           password: _passwordController.text,
         );
-        
         setState(() => _isLoading = false);
-        
+
         if (user != null) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Inicio de sesión exitoso!')),
           );
           Navigator.pushNamed(context, '/navscreen');
-
         }
       } catch (e) {
         setState(() => _isLoading = false);
@@ -41,10 +38,16 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  void _onLeafIconPressed() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("EcoGo: Cuidando el planeta 🌱")),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF9DBF3C),
+      backgroundColor: Color.fromARGB(255, 140, 198, 64),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -53,17 +56,36 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CircleAvatar(
-                  radius: 50,
-                  backgroundColor: Colors.white,
-                  child: Icon(Icons.lock, size: 50, color: Colors.brown),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Padding(padding: EdgeInsets.only(right: 0),
+                    child: Text(
+                      "EcoGo",
+                      style: TextStyle(
+                        fontSize: 55, // más grande
+                        fontWeight: FontWeight.w900, // más grueso
+                        color: Colors.brown,
+                      ),
+                    ),
+                    ),
+                    
+                    Padding(padding: EdgeInsets.only(left: 0),
+                    child: IconButton(
+                      icon: Icon(Icons.eco, color: Colors.white, size: 50),
+                      onPressed: () { Navigator.pushNamed(context, '/authadminpage');},
+                    
+                    ),
+                    ),
+                    
+                  ],
                 ),
-                SizedBox(height: 20),
+                SizedBox(height: 10),
 
                 Text(
                   "Iniciar Sesión",
                   style: TextStyle(
-                    fontSize: 28,
+                    fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: Colors.brown,
                   ),
@@ -74,26 +96,31 @@ class _LoginPageState extends State<LoginPage> {
                   width: 285,
                   child: TextFormField(
                     controller: _emailController,
-                    validator: (value) => value!.isEmpty ? 'Ingrese su correo' : null,
+                    validator: (value) =>
+                        value!.isEmpty ? 'Ingrese su correo' : null,
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: Colors.white,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                      border:
+                          OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                       hintText: 'email@domain.com',
                     ),
                   ),
                 ),
                 SizedBox(height: 20),
+
                 SizedBox(
                   width: 285,
                   child: TextFormField(
                     controller: _passwordController,
                     obscureText: true,
-                    validator: (value) => value!.length < 6 ? 'Mínimo 6 caracteres' : null,
+                    validator: (value) =>
+                        value!.length < 6 ? 'Mínimo 6 caracteres' : null,
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: Colors.white,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                      border:
+                          OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                       hintText: 'Contraseña',
                     ),
                   ),
@@ -117,21 +144,24 @@ class _LoginPageState extends State<LoginPage> {
                         : Text("Ingresar"),
                   ),
                 ),
+
+                SizedBox(height: 10),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pushNamed(context, '/registerpage');
+                  },
+                  child: Text(
+                    "Registrarse",
+                    style: TextStyle(
+                      color: Colors.white,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pushNamed(
-            context,
-            '/authadminpage',
-
-          );
-        },
-        backgroundColor: Colors.pinkAccent,
-        child: Icon(Icons.location_on),
       ),
     );
   }

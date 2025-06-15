@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:ecogo_app/pages/geo_page.dart';
-import 'package:ecogo_app/pages/notification_page.dart';
-import 'package:ecogo_app/pages/user_profile_page.dart';
-import 'package:ecogo_app/pages/winnings_page.dart';
+
+import 'package:proyecto_dispositivos/pages/prueba.dart';
+import 'package:proyecto_dispositivos/pages/notification_page.dart';
+import 'package:proyecto_dispositivos/pages/user_profile_page.dart';
+import 'package:proyecto_dispositivos/pages/winnings_page.dart';
 
 
 
@@ -16,7 +17,7 @@ class _NavScreenState extends State<NavScreen> {
 
   final _pages = [
     // Aquí reemplaza por tus propias páginas
-    GeoPage(),
+    Prueba(),
     NotificationPage(), // Notificaciones
     WinningsPage(), // Ganancias
     UserProfilePage(),  // Perfil
@@ -29,7 +30,7 @@ class _NavScreenState extends State<NavScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF9DBF3C),
+      backgroundColor: Color.fromARGB(255, 140, 198, 64),
       body: IndexedStack(
         index: _selectedIndex,
         children: _pages,
@@ -38,7 +39,7 @@ class _NavScreenState extends State<NavScreen> {
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
         type: BottomNavigationBarType.fixed,
-        backgroundColor: Color(0xFF9DBF3C),
+        backgroundColor: Color.fromARGB(255, 140, 198, 64),
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.white70,
         showSelectedLabels: false,

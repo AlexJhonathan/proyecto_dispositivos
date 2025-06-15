@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'dart:convert';
 import 'dart:math';
+import 'package:provider/provider.dart';
+import 'package:proyecto_dispositivos/services/auth_service.dart';
+import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'dart:convert';
+import 'dart:math';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:permission_handler/permission_handler.dart';
@@ -9,6 +15,8 @@ import 'package:gal/gal.dart';
 import 'dart:ui' as ui;
 import 'dart:typed_data';
 import 'package:flutter/rendering.dart';
+import 'package:provider/provider.dart';
+import 'package:proyecto_dispositivos/services/auth_service.dart';
 
 class WinningsPage extends StatefulWidget {
   @override
@@ -16,11 +24,22 @@ class WinningsPage extends StatefulWidget {
 }
 
 class _WinningsPageState extends State<WinningsPage> {
-  int userPoints = 1500; // Puntos predeterminados
   String? qrData;
   DateTime? qrExpiration;
-  final GlobalKey _qrKey = GlobalKey(); // Key para capturar el QR
-  
+  final GlobalKey _qrKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    // Cargar puntos desde AuthService al iniciar
+    Future.delayed(Duration.zero, () {
+      final authService = Provider.of<AuthService>(context, listen: false);
+      authService.cargarPuntosUsuario().then((_) {
+        setState(() {}); // Actualizar UI tras carga de puntos
+      });
+    });
+  }
+
   // Listas de canje
   final List<Map<String, dynamic>> dineroCanjes = [
     {'puntos': 1000, 'valor': 50, 'moneda': 'bs'},
@@ -40,6 +59,9 @@ class _WinningsPageState extends State<WinningsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final authService = Provider.of<AuthService>(context);
+    final userPoints = authService.puntos;
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -75,7 +97,7 @@ class _WinningsPageState extends State<WinningsPage> {
                     ),
                   ),
                 ),
-                
+
                 // Content
                 Expanded(
                   child: Container(
@@ -112,7 +134,7 @@ class _WinningsPageState extends State<WinningsPage> {
                             ),
                             SizedBox(height: 8),
                             Text(
-                              'Tiempo de juego: 45 min\n¡Sigue jugando para ganar más!',
+                              '¡Sigue jugando para ganar más!',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 14,
@@ -121,9 +143,9 @@ class _WinningsPageState extends State<WinningsPage> {
                             ),
                           ],
                         ),
-                        
+
                         SizedBox(height: 32),
-                        
+
                         // Canje buttons
                         Column(
                           children: [
@@ -140,7 +162,7 @@ class _WinningsPageState extends State<WinningsPage> {
                             ),
                           ],
                         ),
-                        
+
                         Spacer(),
                       ],
                     ),
@@ -154,7 +176,11 @@ class _WinningsPageState extends State<WinningsPage> {
     );
   }
 
-  Widget _buildCanjeCard({required String icon, required String text, required VoidCallback onPressed}) {
+  Widget _buildCanjeCard({
+    required String icon,
+    required String text,
+    required VoidCallback onPressed,
+  }) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.orange.shade200,
@@ -221,6 +247,9 @@ class _WinningsPageState extends State<WinningsPage> {
   }
 
   Widget _buildCanjeList(List<Map<String, dynamic>> items, String type) {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final userPoints = authService.puntos;
+
     return Container(
       height: MediaQuery.of(context).size.height * 0.7,
       padding: EdgeInsets.all(20),
@@ -241,7 +270,7 @@ class _WinningsPageState extends State<WinningsPage> {
               ),
             ],
           ),
-          
+
           Container(
             margin: EdgeInsets.symmetric(vertical: 16),
             padding: EdgeInsets.all(12),
@@ -257,7 +286,7 @@ class _WinningsPageState extends State<WinningsPage> {
               ),
             ),
           ),
-          
+
           Expanded(
             child: ListView.builder(
               itemCount: items.length,
@@ -265,7 +294,7 @@ class _WinningsPageState extends State<WinningsPage> {
                 final item = items[index];
                 final puntos = item['puntos'] as int;
                 final canCanje = userPoints >= puntos;
-                
+
                 return Container(
                   margin: EdgeInsets.only(bottom: 12),
                   decoration: BoxDecoration(
@@ -287,9 +316,9 @@ class _WinningsPageState extends State<WinningsPage> {
                               ),
                             ),
                             Text(
-                              type == 'dinero' 
-                                ? '= ${item['valor']} ${item['moneda']}'
-                                : '= ${item['producto']}',
+                              type == 'dinero'
+                                  ? '= ${item['valor']} ${item['moneda']}'
+                                  : '= ${item['producto']}',
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Colors.grey.shade600,
@@ -298,21 +327,14 @@ class _WinningsPageState extends State<WinningsPage> {
                           ],
                         ),
                       ),
+
                       ElevatedButton(
-                        onPressed: canCanje ? () => _showConfirmDialog(item, type) : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: canCanje ? Colors.green.shade500 : Colors.grey.shade300,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        child: Text(
-                          'CANJEAR',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: canCanje ? Colors.white : Colors.grey.shade500,
-                          ),
-                        ),
+                        onPressed: canCanje
+                            ? () {
+                                _showConfirmDialog(item, type);
+                              }
+                            : null,
+                        child: Text('CANJEAR'),
                       ),
                     ],
                   ),
@@ -325,97 +347,24 @@ class _WinningsPageState extends State<WinningsPage> {
     );
   }
 
-  void _showConfirmDialog(Map<String, dynamic> item, String type) {
-    final puntos = item['puntos'] as int;
-    
-    if (userPoints < puntos) {
-      _showInsufficientPointsDialog();
-      return;
-    }
-    
-    final description = type == 'dinero' 
-      ? '${item['valor']} ${item['moneda']}'
-      : item['producto'];
-    
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(Icons.warning_amber_outlined, color: Colors.orange),
-            SizedBox(width: 8),
-            Text('¿Estás seguro?'),
-          ],
-        ),
-        content: Text('¿Cambiar $puntos puntos por $description?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('CANCELAR'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context); // Close dialog
-              Navigator.pop(context); // Close bottom sheet
-              _processExchange(item, type);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green.shade500,
-            ),
-            child: Text('ACEPTAR', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-  }
+  void _generateQR(String tipoCanje, Map<String, dynamic> canje) {
+    final now = DateTime.now();
+    final expiration = now.add(Duration(minutes: 10));
 
-  void _showInsufficientPointsDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(Icons.close, color: Colors.red),
-            SizedBox(width: 8),
-            Text('Puntos Insuficientes'),
-          ],
-        ),
-        content: Text('¡Sigue jugando para ganar más puntos!'),
-        actions: [
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange.shade500,
-            ),
-            child: Text('CONTINUAR JUGANDO', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _processExchange(Map<String, dynamic> item, String type) {
-    final puntos = item['puntos'] as int;
-    
-    // Generate unique QR code
-    final uniqueId = DateTime.now().millisecondsSinceEpoch.toString() + 
-                    Random().nextInt(10000).toString();
-    
-    final qrDataMap = {
-      'id': uniqueId,
-      'type': type,
-      'points': puntos,
-      'value': type == 'dinero' ? '${item['valor']} ${item['moneda']}' : item['producto'],
-      'timestamp': DateTime.now().millisecondsSinceEpoch,
-      'expires': DateTime.now().add(Duration(minutes: 10)).millisecondsSinceEpoch,
+    final qrObject = {
+      'tipo': tipoCanje,
+      'detalles': canje,
+      'fechaGeneracion': now.toIso8601String(),
+      'fechaExpiracion': expiration.toIso8601String(),
+      'id': Random().nextInt(1000000), // Id random para ejemplo
     };
-    
+
     setState(() {
-      userPoints -= puntos;
-      qrData = jsonEncode(qrDataMap);
-      qrExpiration = DateTime.fromMillisecondsSinceEpoch(qrDataMap['expires']);
+      qrData = jsonEncode(qrObject);
+      qrExpiration = expiration;
     });
-    
+
+    // Mostrar dialog con QR
     _showQRDialog();
   }
 
@@ -560,5 +509,101 @@ class _WinningsPageState extends State<WinningsPage> {
         ),
       );
     }
+  }
+
+  void _showAlert(String titulo, String mensaje) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(titulo),
+        content: Text(mensaje),
+        actions: [
+          ElevatedButton(
+            child: Text('Aceptar'),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showConfirmDialog(Map<String, dynamic> item, String type) {
+    final puntos = item['puntos'] as int;
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final userPoints = authService.puntos;
+
+    if (userPoints < puntos) {
+      _showInsufficientPointsDialog();
+      return;
+    }
+
+    final description = type == 'dinero'
+        ? '${item['valor']} ${item['moneda']}'
+        : item['producto'];
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.warning_amber_outlined, color: Colors.orange),
+            SizedBox(width: 8),
+            Text('¿Estás seguro?'),
+          ],
+        ),
+        content: Text('¿Cambiar $puntos puntos por $description?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('CANCELAR'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context); // Cerrar diálogo de confirmación
+              Navigator.pop(context); // Cerrar el bottom sheet
+
+              // Lógica de canje
+              bool success = await authService.restarPuntos(puntos);
+              if (success) {
+                _generateQR(type, item);
+                setState(() {}); // Actualiza UI con nuevo QR
+              } else {
+                _showAlert('Error', 'No se pudo canjear. Intenta de nuevo más tarde.');
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green.shade500,
+            ),
+            child: Text('ACEPTAR', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+
+  void _showInsufficientPointsDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.close, color: Colors.red),
+            SizedBox(width: 8),
+            Text('Puntos Insuficientes'),
+          ],
+        ),
+        content: Text('¡Sigue jugando para ganar más puntos!'),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange.shade500,
+            ),
+            child: Text('CONTINUAR JUGANDO', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ecogo_app/services/admin_noti_service.dart';
+import 'package:proyecto_dispositivos/services/admin_noti_service.dart';
 
 class AdminNotificationPage extends StatefulWidget {
   const AdminNotificationPage({super.key});
@@ -12,7 +12,7 @@ class _AdminNotificationPageState extends State<AdminNotificationPage> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _bodyController = TextEditingController();
   final AdminNotiService _adminNotiService = AdminNotiService();
-  bool _isSending = false;
+  bool _isSaving = false;
 
   @override
   void dispose() {
@@ -21,7 +21,7 @@ class _AdminNotificationPageState extends State<AdminNotificationPage> {
     super.dispose();
   }
 
-  Future<void> _sendNotificationToAll() async {
+  Future<void> _saveNotification() async {
     if (_titleController.text.trim().isEmpty || _bodyController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -33,11 +33,11 @@ class _AdminNotificationPageState extends State<AdminNotificationPage> {
     }
 
     setState(() {
-      _isSending = true;
+      _isSaving = true;
     });
 
     try {
-      await _adminNotiService.sendNotificationToAll(
+      await _adminNotiService.saveNotification(
         title: _titleController.text.trim(),
         body: _bodyController.text.trim(),
       );
@@ -45,12 +45,10 @@ class _AdminNotificationPageState extends State<AdminNotificationPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Notificación enviada exitosamente a todos los usuarios'),
+            content: Text('Notificación guardada en Firestore'),
             backgroundColor: Colors.green,
           ),
         );
-        
-        // Limpiar los campos después del envío exitoso
         _titleController.clear();
         _bodyController.clear();
       }
@@ -58,7 +56,7 @@ class _AdminNotificationPageState extends State<AdminNotificationPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error al enviar notificación: $e'),
+            content: Text('Error al guardar notificación: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -66,7 +64,7 @@ class _AdminNotificationPageState extends State<AdminNotificationPage> {
     } finally {
       if (mounted) {
         setState(() {
-          _isSending = false;
+          _isSaving = false;
         });
       }
     }
@@ -76,104 +74,58 @@ class _AdminNotificationPageState extends State<AdminNotificationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Enviar Notificación'),
-        backgroundColor: Colors.green,
+        title: const Text('Guardar Notificación'),
+        backgroundColor: Color.fromARGB(255, 140, 198, 64),
         foregroundColor: Colors.white,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text(
-              'Enviar notificación a todos los usuarios',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              'Notificación para todos los usuarios',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
-            
-            // Campo para el título
             TextField(
               controller: _titleController,
               decoration: const InputDecoration(
-                labelText: 'Título de la notificación',
+                labelText: 'Título',
                 border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.title),
               ),
-              maxLength: 50,
-              enabled: !_isSending,
+              enabled: !_isSaving,
             ),
             const SizedBox(height: 16),
-            
-            // Campo para el mensaje
             TextField(
               controller: _bodyController,
               decoration: const InputDecoration(
-                labelText: 'Mensaje de la notificación',
+                labelText: 'Mensaje',
                 border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.message),
               ),
               maxLines: 4,
-              maxLength: 200,
-              enabled: !_isSending,
+              enabled: !_isSaving,
             ),
             const SizedBox(height: 24),
-            
-            // Botón para enviar
-            ElevatedButton.icon(
-              onPressed: _isSending ? null : _sendNotificationToAll,
-              icon: _isSending 
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.send),
-              label: Text(_isSending ? 'Enviando...' : 'Enviar a todos'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                textStyle: const TextStyle(fontSize: 16),
+            SizedBox(
+              width: 150, // ancho fijo deseado
+              child: ElevatedButton.icon(
+                onPressed: _isSaving ? null : _saveNotification,
+                icon: _isSaving
+                    ? const SizedBox(width: 40, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Icon(Icons.save, color: Colors.white),
+                label: Text(_isSaving ? 'Guardando...' : 'Guardar'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color.fromARGB(255, 140, 198, 64),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
               ),
-            ),
-            
-            const SizedBox(height: 16),
-            
-            // Información adicional
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.blue.shade200),
-              ),
-              child: const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.info, color: Colors.blue),
-                      SizedBox(width: 8),
-                      Text(
-                        'Información:',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 8),
-                  Text('• La notificación se enviará a todos los dispositivos registrados'),
-                  Text('• Los usuarios recibirán la notificación aunque tengan la app cerrada'),
-                  Text('• El envío puede tardar unos segundos en completarse'),
-                ],
-              ),
-            ),
+            )
           ],
         ),
       ),
+
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.pushNamed(
@@ -182,8 +134,8 @@ class _AdminNotificationPageState extends State<AdminNotificationPage> {
 
           );
         },
-        backgroundColor: const Color.fromARGB(255, 0, 255, 187),
-        child: Icon(Icons.location_on),
+        backgroundColor: Colors.purple.shade500,
+        child: Icon(Icons.location_on, color: Colors.white),
       ),
     );
   }

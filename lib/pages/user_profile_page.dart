@@ -1,52 +1,49 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'dart:math';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'package:proyecto_dispositivos/services/auth_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
+import 'dart:convert';
 
 class UserProfilePage extends StatefulWidget {
   @override
-  _UserProfilePageState createState() => _UserProfilePageState();
+  State<UserProfilePage> createState() => _UserProfilePageState();
 }
 
 class _UserProfilePageState extends State<UserProfilePage> {
+  Map<String, dynamic>? userData;
+  List<Map<String, dynamic>> topUsers = [];
   Timer? _factTimer;
   int _currentFactIndex = 0;
   bool _showFact = false;
   File? _profileImage;
   final ImagePicker _picker = ImagePicker();
-
-  // Datos del usuario (simulados)
-  final String username = "EcoWarrior2024";
-  final String profileImage = "assets/profile_placeholder.png";
-  final int level = 12;
-  final int ecoCoins = 2450;
-  final int streakDays = 15;
-  final DateTime registrationDate = DateTime(2024, 1, 15);
-  final int productExchanges = 8;
-
-  // Datos curiosos sobre basura
   final List<String> environmentalFacts = [
-    "Una botella de plástico tarda hasta 450 años en descomponerse completamente en la naturaleza.",
-    "Cada año, 8 millones de toneladas de plástico terminan en nuestros océanos.",
-    "Una lata de aluminio puede reciclarse infinitas veces sin perder calidad.",
-    "El 91% de los plásticos no se reciclan y terminan en vertederos o el medio ambiente.",
-    "Una colilla de cigarrillo puede contaminar hasta 50 litros de agua potable."
-  ];
-
-  // Ranking semanal (datos simulados)
-  final List<Map<String, dynamic>> weeklyRanking = [
-    {"name": "EcoMaster", "points": 3200, "position": 1},
-    {"name": "GreenHero", "points": 2800, "position": 2},
-    {"name": "EcoWarrior2024", "points": 2450, "position": 3},
-    {"name": "PlantLover", "points": 2100, "position": 4},
-    {"name": "RecycleKing", "points": 1950, "position": 5},
+    "Una botella de plástico tarda hasta 450 años en descomponerse.",
+    "8 millones de toneladas de plástico terminan en el mar anualmente.",
+    "Una lata de aluminio puede reciclarse infinitas veces.",
+    "El 91% de los plásticos no se reciclan.",
+    "Una colilla de cigarro contamina 50 L de agua."
   ];
 
   @override
   void initState() {
     super.initState();
-    _startFactTimer();
+    _loadUser();
+    Future.delayed(Duration.zero, () {
+      final authService = Provider.of<AuthService>(context, listen: false);
+      authService.cargarPuntosUsuario(); // Carga inicial de puntos
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (ModalRoute.of(context)?.isCurrent == true) {
+      _startFactTimer();
+    }
   }
 
   @override
@@ -56,533 +53,173 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
   void _startFactTimer() {
-    // Mostrar el primer dato inmediatamente para prueba
-    Future.delayed(Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() {
-          _showFact = true;
-          _currentFactIndex = Random().nextInt(environmentalFacts.length);
-        });
-      }
+    _factTimer?.cancel();
+    setState(() {
+      _currentFactIndex = DateTime.now().millisecondsSinceEpoch % environmentalFacts.length;
+      _showFact = true;
     });
+    Future.delayed(Duration(seconds: 15), () {
+      if (mounted) setState(() => _showFact = false);
+    });
+  }
 
-    _factTimer = Timer.periodic(Duration(seconds: 30), (timer) { // Cambiado a 30 segundos para prueba
-      setState(() {
-        _showFact = true;
-        _currentFactIndex = Random().nextInt(environmentalFacts.length);
-      });
-      
-      // Ocultar el dato después de 15 segundos
-      Timer(Duration(seconds: 15), () {
-        if (mounted) {
-          setState(() {
-            _showFact = false;
-          });
-        }
-      });
+  Future<void> _loadUser() async {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final data = await authService.fetchCurrentUserData();
+    final ranking = await authService.fetchTop5Users();
+    setState(() {
+      userData = data;
+      topUsers = ranking;
     });
   }
 
   Future<void> _pickImage() async {
-    try {
-      final XFile? image = await _picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 512,
-        maxHeight: 512,
-        imageQuality: 85,
-      );
-      
-      if (image != null) {
-        setState(() {
-          _profileImage = File(image.path);
-        });
-      }
-    } catch (e) {
-      print('Error al seleccionar imagen: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al seleccionar la imagen'),
-          backgroundColor: Colors.red,
-        ),
-      );
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final img = await _picker.pickImage(source: ImageSource.gallery, maxWidth: 128, maxHeight: 128, imageQuality: 50);
+    if (img != null) {
+      final bytes = await img.readAsBytes();
+      final base64Image = base64Encode(bytes);
+      setState(() => _profileImage = File(img.path));
+      await authService.updatePhotoUrl(base64Image);
     }
-  }
-
-  String _getStreakMedal() {
-    if (streakDays >= 30) return "🏆";
-    if (streakDays >= 14) return "🥇";
-    if (streakDays >= 7) return "🥈";
-    if (streakDays >= 3) return "🥉";
-    return "⭐";
-  }
-
-  String _getProfileFrame() {
-    if (productExchanges >= 20) return "Maestro del Canje";
-    if (productExchanges >= 10) return "Canjeador Experto";
-    if (productExchanges >= 5) return "Canjeador Activo";
-    return "Nuevo Canjeador";
-  }
-
-  String _getUserTitle() {
-    if (productExchanges >= 25) return "Eco Emperador";
-    if (productExchanges >= 15) return "Guardián Verde";
-    if (productExchanges >= 10) return "Héroe del Reciclaje";
-    if (productExchanges >= 5) return "Eco Guerrero";
-    return "Aprendiz Ecológico";
-  }
-
-  Color _getFrameColor() {
-    if (productExchanges >= 20) return Colors.purple;
-    if (productExchanges >= 10) return Colors.orange;
-    if (productExchanges >= 5) return Colors.blue;
-    return Colors.grey;
-  }
-
-  int _getDaysPlaying() {
-    return DateTime.now().difference(registrationDate).inDays;
   }
 
   @override
   Widget build(BuildContext context) {
+    final authService = Provider.of<AuthService>(context);
+    final puntos = authService.puntos;
+    final u = userData;
+    if (u == null) {
+      return Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    final username = u['username'] ?? '';
+    final photoUrl = u['photoUrl'] as String?;
+    final registrationDate = (u['registrationDate'] as Timestamp).toDate();
+    final streak = u['streak'] as int? ?? 0;
+    final daysPlaying = DateTime.now().difference(registrationDate).inDays;
+
     return Scaffold(
       backgroundColor: Color(0xFFE8F5E8),
-      appBar: AppBar(
-        title: Text('Mi Perfil Eco', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Color(0xFF4CAF50),
-        elevation: 0,
-      ),
+      appBar: AppBar(title: Text('Mi Perfil Eco'), backgroundColor: Color.fromARGB(255, 140, 198, 64), foregroundColor: Colors.white,),
       body: Stack(
         children: [
-          SingleChildScrollView(
+          ListView(
             padding: EdgeInsets.all(16),
-            child: Column(
-              children: [
-                // Perfil básico
-                _buildProfileCard(),
-                SizedBox(height: 16),
-                
-                // Estadísticas
-                _buildStatsCard(),
-                SizedBox(height: 16),
-                
-                // Ranking semanal
-                _buildRankingCard(),
-                SizedBox(height: 20),
-              ],
-            ),
-          ),
-          
-          // Ventana deslizante con datos curiosos
-          if (_showFact) _buildFactSlider(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProfileCard() {
-    return Card(
-      elevation: 8,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          gradient: LinearGradient(
-            colors: [Color(0xFF66BB6A), Color(0xFF4CAF50)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        padding: EdgeInsets.all(20),
-        child: Column(
-          children: [
-            // Foto de perfil con marco
-            GestureDetector(
-              onTap: _pickImage,
-              child: Stack(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: _getFrameColor(),
-                        width: 4,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 10,
-                          offset: Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: CircleAvatar(
-                      radius: 50,
-                      backgroundColor: Colors.white,
-                      backgroundImage: _profileImage != null 
-                          ? FileImage(_profileImage!) 
-                          : null,
-                      child: _profileImage == null 
-                          ? Icon(Icons.person, size: 60, color: Colors.grey[600])
-                          : null,
-                    ),
+            children: [
+              // Card perfil
+              Card(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                child: Container(
+                  padding: EdgeInsets.symmetric(vertical: 32, horizontal: 20),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    gradient: LinearGradient(colors: [Color.fromARGB(255, 140, 198, 64), Color.fromARGB(255, 140, 198, 64)]),
                   ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black26,
-                            blurRadius: 4,
-                            offset: Offset(0, 2),
-                          ),
+                  child: Column(
+                    children: [
+                      GestureDetector(
+                        onTap: _pickImage,
+                        child: CircleAvatar(
+                          radius: 50,
+                          backgroundImage: _profileImage != null
+                              ? FileImage(_profileImage!)
+                              : (photoUrl != null && photoUrl.isNotEmpty
+                                  ? (photoUrl.startsWith('http')
+                                      ? NetworkImage(photoUrl)
+                                      : MemoryImage(base64Decode(photoUrl)))
+                                  : null) as ImageProvider<Object>?,
+                          child: _profileImage == null && (photoUrl?.isEmpty ?? true)
+                              ? Icon(Icons.person, size: 60, color: Colors.white70)
+                              : null,
+                          backgroundColor: Colors.grey[300],
+                        ),
+                      ),
+                      SizedBox(height: 12),
+                      Text(username, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+                      SizedBox(height: 8),
+                      Text('Canejador Activo', style: TextStyle(color: Colors.white70)),
+                      SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          _statItem('Puntos', puntos.toString(), Icons.monetization_on),
+                          _statItem('Días jugados', daysPlaying.toString(), Icons.calendar_today),
+                          _statItem('Racha', streak.toString(), Icons.whatshot),
                         ],
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.all(6),
-                        child: Icon(
-                          Icons.camera_alt,
-                          size: 20,
-                          color: Color(0xFF4CAF50),
-                        ),
-                      ),
-                    ),
+                      )
+                    ],
                   ),
-                ],
-              ),
-            ),
-            SizedBox(height: 12),
-            
-            // Título del usuario
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Text(
-                _getUserTitle(),
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
                 ),
               ),
-            ),
-            SizedBox(height: 8),
-            
-            // Username
-            Text(
-              username,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+              SizedBox(height: 16),
+              // Ranking
+              Card(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Ranking Semanal', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF2E7D32))),
+                      SizedBox(height: 12),
+                      ...topUsers.map((p) {
+                        final isMe = p['username'] == username;
+                        return Container(
+                          decoration: isMe
+                              ? BoxDecoration(
+                                  color: Colors.green.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(10),
+                                )
+                              : null,
+                          child: ListTile(
+                            leading: isMe ? Icon(Icons.person_pin, color: Colors.green) : Icon(Icons.person),
+                            title: Text(p['username']),
+                            trailing: isMe
+                            ? Consumer<AuthService>(
+                                builder: (_, auth, __) => Text('${auth.puntos} pts'),
+                              )
+                            : Text('${p['points']} pts'),
+                          ),
+                        );
+                      }).toList(),
+                    ],
+                  ),
+                ),
               ),
-            ),
-            SizedBox(height: 8),
-            
-            // Marco del perfil
-            Text(
-              _getProfileFrame(),
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 16,
-              ),
-            ),
-            SizedBox(height: 16),
-            
-            // Nivel y EcoCoins
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildStatItem("Nivel", level.toString(), Icons.star),
-                _buildStatItem("EcoCoins", ecoCoins.toString(), Icons.monetization_on),
-                _buildStatItem("Días jugando", _getDaysPlaying().toString(), Icons.calendar_today),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatItem(String label, String value, IconData icon) {
-    return Column(
-      children: [
-        Icon(icon, color: Colors.white, size: 24),
-        SizedBox(height: 4),
-        Text(
-          value,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+            ],
           ),
-        ),
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.white70,
-            fontSize: 12,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatsCard() {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Mis Logros',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+          if (_showFact)
+            Positioned(
+              bottom: 16,
+              left: 16,
+              right: 16,
+              child: Card(
                 color: Color(0xFF2E7D32),
-              ),
-            ),
-            SizedBox(height: 16),
-            
-            // Racha de días
-            Container(
-              padding: EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Color(0xFFF1F8E9),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                children: [
-                  Text(
-                    _getStreakMedal(),
-                    style: TextStyle(fontSize: 30),
-                  ),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Racha de días',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          '$streakDays días consecutivos',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 12),
-            
-            // Productos canjeados
-            Container(
-              padding: EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Color(0xFFE8F5E8),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.redeem, size: 30, color: Color(0xFF4CAF50)),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Productos canjeados',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          '$productExchanges canjes realizados',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRankingCard() {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.leaderboard, color: Color(0xFF2E7D32)),
-                SizedBox(width: 8),
-                Text(
-                  'Ranking Semanal',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF2E7D32),
+                child: Padding(
+                  padding: EdgeInsets.all(12),
+                  child: Row(
+                    children: [
+                      Icon(Icons.lightbulb, color: Colors.yellow),
+                      SizedBox(width: 8),
+                      Expanded(child: Text(environmentalFacts[_currentFactIndex], style: TextStyle(color: Colors.white))),
+                      IconButton(icon: Icon(Icons.close, color: Colors.white), onPressed: () => setState(() => _showFact = false)),
+                    ],
                   ),
                 ),
-              ],
-            ),
-            SizedBox(height: 16),
-            
-            ...weeklyRanking.map((player) => _buildRankingItem(player)).toList(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRankingItem(Map<String, dynamic> player) {
-    bool isCurrentUser = player['name'] == username;
-    Color bgColor = isCurrentUser ? Color(0xFFE8F5E8) : Colors.transparent;
-    
-    return Container(
-      margin: EdgeInsets.only(bottom: 8),
-      padding: EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(8),
-        border: isCurrentUser ? Border.all(color: Color(0xFF4CAF50), width: 2) : null,
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 30,
-            height: 30,
-            decoration: BoxDecoration(
-              color: _getRankingColor(player['position']),
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                player['position'].toString(),
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
               ),
             ),
-          ),
-          SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              player['name'],
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: isCurrentUser ? FontWeight.bold : FontWeight.normal,
-              ),
-            ),
-          ),
-          Text(
-            '${player['points']} pts',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.bold,
-            ),
-          ),
         ],
       ),
     );
   }
 
-  Color _getRankingColor(int position) {
-    switch (position) {
-      case 1: return Colors.amber;
-      case 2: return Colors.grey[400]!;
-      case 3: return Colors.brown[300]!;
-      default: return Color(0xFF4CAF50);
-    }
-  }
-
-  Widget _buildFactSlider() {
-    return Positioned(
-      top: 100,
-      left: 16,
-      right: 16,
-      child: AnimatedContainer(
-        duration: Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
-        child: Card(
-          elevation: 8,
-          color: Color(0xFF2E7D32),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          child: Padding(
-            padding: EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.lightbulb, color: Colors.yellow, size: 24),
-                    SizedBox(width: 8),
-                    Text(
-                      '¿Sabías que...?',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Spacer(),
-                    IconButton(
-                      icon: Icon(Icons.close, color: Colors.white, size: 20),
-                      onPressed: () {
-                        setState(() {
-                          _showFact = false;
-                        });
-                      },
-                    ),
-                  ],
-                ),
-                SizedBox(height: 8),
-                Text(
-                  environmentalFacts[_currentFactIndex],
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  Widget _statItem(String label, String val, IconData icon) => Column(
+        children: [
+          Icon(icon, color: Colors.white),
+          SizedBox(height: 4),
+          Text(val, style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(label, style: TextStyle(color: Colors.white70)),
+        ],
+      );
 }

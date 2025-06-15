@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'dart:typed_data';
 import 'dart:async';
 import 'package:image/image.dart' as img;
-import 'package:ecogo_app/pages/geo_page.dart';
+import 'package:proyecto_dispositivos/pages/prueba.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -241,7 +241,7 @@ class _HomePageState extends State<HomePage> {
               Future.delayed(Duration(milliseconds: 1000), () {
                 if (mounted) {
                   // Navegar a la pantalla play_page
-                  Navigator.of(context).pushNamed('/play', arguments: detectedLabel);
+                  Navigator.pop(context, true);
                 }
                 
                 // Reiniciar contadores después de la navegación
@@ -272,16 +272,7 @@ class _HomePageState extends State<HomePage> {
           _result = "$detectedLabel - $confidenceText";
         });
         
-        // Notificación para alta confianza
-        if (confidence >= 0.9 && mounted && !_isNavigating) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("¡Detectado: $detectedLabel!"),
-              backgroundColor: Colors.green,
-              duration: Duration(seconds: 1),
-            ),
-          );
-        }
+ 
       } else {
         setState(() {
           _result = "Analizando...";

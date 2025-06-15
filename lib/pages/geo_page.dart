@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'prueba.dart'; // Asegúrate de importar la pantalla Prueba
-import 'package:ecogo_app/services/points_service.dart';
+import 'package:proyecto_dispositivos/services/auth_service.dart';
 
 void main() => runApp(const MyApp());
 
@@ -21,7 +21,6 @@ class MyApp extends StatelessWidget {
 class GeoPage extends StatefulWidget {
   const GeoPage({super.key});
   final bool showConfirmation = false;
-   final String userId = 'defaultUserId'; // Cambia esto por el ID del usuario real
 
   @override
   State<GeoPage> createState() => _GeoPageState();
@@ -32,7 +31,7 @@ class _GeoPageState extends State<GeoPage> {
   double? _longitude;
   String? _error;
 
-  final PointsService _pointsService = PointsService();
+  final AuthService _authService = AuthService();
 
   
 
@@ -85,7 +84,7 @@ class _GeoPageState extends State<GeoPage> {
           TextButton(
             onPressed: () async {
               Navigator.of(context).pop(); // cerrar diálogo
-              await _pointsService.addPoints(widget.userId, 15);
+              await _authService.sumarPuntos(20);
               setState(() {}); // actualizar vista si deseas mostrar puntos
             },
             child: const Text('Aceptar'),
@@ -110,11 +109,7 @@ class _GeoPageState extends State<GeoPage> {
   @override
   Widget build(BuildContext context) {
     if (showPrueba) {
-      return Prueba(
-        currentLat: _latitude!,
-        currentLng: _longitude!,
-        onBack: () => setState(() => showPrueba = false), // para volver
-      );
+      return Prueba();
     }
 
     return Scaffold(

@@ -1,27 +1,35 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:ecogo_app/firebase_options.dart';
+import 'package:proyecto_dispositivos/firebase_options.dart';
 
-import 'package:ecogo_app/pages/auth/login_page.dart';
-import 'package:ecogo_app/pages/auth/register_page.dart';
-import 'package:ecogo_app/pages/geo_page.dart';
-import 'package:ecogo_app/pages/home_page.dart';
-import 'package:ecogo_app/pages/first_page.dart';
-import 'package:ecogo_app/pages/play_page.dart';
-import 'package:ecogo_app/pages/notification_page.dart';
-import 'package:ecogo_app/pages/admin_notification_page.dart';
-import 'package:ecogo_app/pages/winnings_page.dart';
-import 'package:ecogo_app/pages/admin_winnings_page.dart';
-import 'package:ecogo_app/pages/user_profile_page.dart';
-import 'package:ecogo_app/pages/auth_admin_page.dart';
-import 'package:ecogo_app/pages/nav_screen.dart';//import 'package:ecogo_app/pages/prueba.dart';
+import 'package:provider/provider.dart';
+import 'package:proyecto_dispositivos/services/auth_service.dart';
+
+import 'package:proyecto_dispositivos/pages/auth/login_page.dart';
+import 'package:proyecto_dispositivos/pages/auth/register_page.dart';
+import 'package:proyecto_dispositivos/pages/geo_page.dart';
+import 'package:proyecto_dispositivos/pages/home_page.dart';
+import 'package:proyecto_dispositivos/pages/first_page.dart';
+import 'package:proyecto_dispositivos/pages/play_page.dart';
+import 'package:proyecto_dispositivos/pages/notification_page.dart';
+import 'package:proyecto_dispositivos/pages/admin_notification_page.dart';
+import 'package:proyecto_dispositivos/pages/winnings_page.dart';
+import 'package:proyecto_dispositivos/pages/admin_winnings_page.dart';
+import 'package:proyecto_dispositivos/pages/user_profile_page.dart';
+import 'package:proyecto_dispositivos/pages/auth_admin_page.dart';
+import 'package:proyecto_dispositivos/pages/nav_screen.dart';//import 'package:proyecto_dispositivos/pages/prueba.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const MainApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => AuthService(),
+      child: const MainApp(),
+    ),
+  );
 }
 
 class MainApp extends StatelessWidget {

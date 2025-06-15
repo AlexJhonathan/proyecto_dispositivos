@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ecogo_app/services/auth_service.dart';
+import 'package:proyecto_dispositivos/services/auth_service.dart';
 
 class RegisterPage extends StatefulWidget {
   @override
@@ -28,6 +28,7 @@ class _RegisterPageState extends State<RegisterPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Registro exitoso!')),
         );
+        Navigator.pushNamed(context, '/navscreen');
 
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -40,7 +41,7 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF9DBF3C),
+      backgroundColor: Color.fromARGB(255, 140, 198, 64),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -111,6 +112,20 @@ class _RegisterPageState extends State<RegisterPage> {
                     child: _isLoading
                         ? CircularProgressIndicator(color: Colors.white)
                         : Text("Registrarse"),
+                  ),
+                ),
+
+                SizedBox(height: 10),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pushNamed(context, '/loginpage');
+                  },
+                  child: Text(
+                    "Login",
+                    style: TextStyle(
+                      color: Colors.white,
+                      decoration: TextDecoration.underline,
+                    ),
                   ),
                 ),
               ],
